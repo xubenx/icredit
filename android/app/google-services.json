@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "190226247499",
+    "firebase_url": "https://icreditmx69-default-rtdb.firebaseio.com",
+    "project_id": "icreditmx69",
+    "storage_bucket": "icreditmx69.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:190226247499:android:06764f155c2304bf6042ce",
+        "android_client_info": {
+          "package_name": "com.xubenx.icredit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFSPLltx2z3pI4NMvo68eIegqDJQdXEvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
