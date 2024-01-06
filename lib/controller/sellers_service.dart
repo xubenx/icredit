@@ -1,28 +1,8 @@
+// lib/controller/sellers_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../model/sellers.dart';
 
-class Seller {
-  String? id;
-  String? name;
-  String? email;
-  int? phone;
-  String? curp;
-  String? user;
-  String? password;
-  bool? isActive;
-
-  Seller({
-    this.id,
-    this.name,
-    this.email,
-    this.phone,
-    this.curp,
-    this.user,
-    this.password,
-    this.isActive = true,
-  });
-}
-
-class sellersService {
+class SellersService {
   final CollectionReference sellers =
   FirebaseFirestore.instance.collection('sellers');
 

@@ -1,60 +1,138 @@
-import 'dart:html' as html;
-import 'dart:typed_data';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:icredit/firebase_options.dart';
-import 'package:icredit/sellers.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
-import 'login.dart';
-import 'package:icredit/sellers.dart';
-
+import 'package:icredit/views/login_pages.dart';
+/// Flutter code sample for [Drawer].
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:flutter/cupertino.dart';
+
+/// Flutter code sample for [CupertinoPageInicio].
+import 'package:flutter/cupertino.dart';
+
+/// Flutter code sample for [CupertinoPageInicio].
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(const PageInicioApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PageInicioApp extends StatelessWidget {
+  const PageInicioApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'iCredit',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.grey,
-          // ···
-          brightness: Brightness.dark,
-        ),
 
-        // Define the default `TextTheme`. Use this to specify the default
-        // text styling for headlines, titles, bodies of text, and more.
-        textTheme: TextTheme(
-          displayLarge: const TextStyle(
-            fontSize: 72,
-            fontWeight: FontWeight.bold,
-          ),
-          // ···
-          titleLarge: GoogleFonts.oswald(
-            fontSize: 30,
-            fontStyle: FontStyle.italic,
-          ),
-          bodyMedium: GoogleFonts.merriweather(),
-          displaySmall: GoogleFonts.pacifico(),
-        ),
-      ),
-      home: const PageSellers(),
+  Widget build(BuildContext context) {
+    return const CupertinoApp(
+      theme: CupertinoThemeData(brightness: Brightness.light),
+      home: PageInicio(),
     );
   }
 }
 
+class PageInicio extends StatefulWidget {
+  const PageInicio({super.key});
+
+  @override
+  State<PageInicio> createState() => _PageInicioState();
+}
+
+class _PageInicioState extends State<PageInicio> {
+  TextEditingController _textEditingController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Image(
+          image: NetworkImage(
+              'https://firebasestorage.googleapis.com/v0/b/icreditmx69.appspot.com/o/icredit_lowheight.png?alt=media'),
+          height: 100,
+        ),
+      ),
+      child: Stack(
+        children: [
+          const Center(
+            child: Column(
+              children: [
+                Image(
+                  image: NetworkImage(
+                      'https://firebasestorage.googleapis.com/v0/b/icreditmx69.appspot.com/o/background-fondo.jpg?alt=media'),
+                ),
+              ],
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 200,
+                      child: CupertinoTextField(
+                        controller: _textEditingController,
+                        placeholder: 'Ingresa tu #.',
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    CupertinoButton.filled(
+                      onPressed: () {
+
+                        //CONTRATO
+                        int precioProducto = 7000;
+                        double ComisionSemanal = 2.5;
+                        int numSemanas = 40;
+                        double comisionSemanalPesos = (precioProducto * (ComisionSemanal/100));
+
+                        double precioFinal = precioProducto + (comisionSemanalPesos * numSemanas);
+
+                        
+
+
+
+                        print(precioFinal);
+
+
+
+                        if (_textEditingController.text == "login") {
+                          // Navigate to another screen
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginApp()),
+                          );
+                        } else {
+                          // Handle other cases or show a message
+                        }
+                      },
+                      child: const Text("Pagar"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
+
+class DrawerApp extends StatelessWidget {
+  const DrawerApp({super.key});
+
+  @override
+
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(useMaterial3: true),
+      home: const LoginPage(),
+    );
+  }
+}

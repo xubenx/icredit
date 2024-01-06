@@ -1,6 +1,8 @@
-import 'package:flutter/foundation.dart';
+// lib/views/sellers_pages.dart
 import 'package:flutter/material.dart';
-import 'sellersService.dart';
+import '../model/sellers.dart';
+import '../controller/sellers_service.dart';
+
 class PageSellers extends StatefulWidget {
   const PageSellers({Key? key}) : super(key: key);
 
@@ -9,7 +11,7 @@ class PageSellers extends StatefulWidget {
 }
 
 class _PageSellersState extends State<PageSellers> {
-  final sellersService sellerService = sellersService();
+  final SellersService sellersService = SellersService();
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +102,7 @@ class __SellerFormState extends State<_SellerForm> {
 
   @override
   Widget build(BuildContext context) {
-    final sellersService sellerService = sellersService();
+    final SellersService sellerService = SellersService();
 
     return Form(
       key: _formKey,
@@ -261,7 +263,7 @@ class __SellerFormState extends State<_SellerForm> {
 
 class ListSellers extends StatelessWidget {
   @override
-  final sellersService sellerService = sellersService();
+  final SellersService sellerService = SellersService();
 
   Widget build(BuildContext context) {
     return StreamBuilder<List<Seller>>(
