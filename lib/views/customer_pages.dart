@@ -19,12 +19,7 @@ class AddCustomer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Agregar Cliente'),
-      ),
-      body: _CustomerForm(),
-    );
+    return CustomerForm();
   }
 }
 
@@ -64,7 +59,7 @@ class EditCustomer extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Editar Cliente'),
       ),
-      body: _CustomerForm(customer: customer),
+      body: CustomerForm(customer: customer),
     );
   }
 }
@@ -111,16 +106,16 @@ class ListCustomer extends StatelessWidget {
   }
 }
 
-class _CustomerForm extends StatefulWidget {
+class CustomerForm extends StatefulWidget {
   final Customer? customer;
 
-  const _CustomerForm({Key? key, this.customer}) : super(key: key);
+  const CustomerForm({Key? key, this.customer}) : super(key: key);
 
   @override
   __CustomerFormState createState() => __CustomerFormState();
 }
 
-class __CustomerFormState extends State<_CustomerForm> {
+class __CustomerFormState extends State<CustomerForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -147,9 +142,10 @@ class __CustomerFormState extends State<_CustomerForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: ListView(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        children: [
+    child: Column(
+    children: [
           SwitchListTile(
             title: const Text('Estado'),
             value: _isActive,
@@ -270,6 +266,133 @@ class __CustomerFormState extends State<_CustomerForm> {
           ),
         ],
       ),
+    )
+    );
+  }
+}
+
+
+
+
+
+class addCustomerForm extends StatefulWidget {
+  final Customer? customer;
+
+  const addCustomerForm({Key? key, this.customer}) : super(key: key);
+
+  @override
+  __addCustomerFormState createState() => __addCustomerFormState();
+}
+
+class __addCustomerFormState extends State<addCustomerForm> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _curpController = TextEditingController();
+
+  @override
+  void initState() {
+
+  }
+
+  final CustomerService customerService = CustomerService();
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nameController,
+                autofocus: true,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  filled: true,
+                  hintText: 'Nombre del cliente',
+                  labelText: 'Nombre',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, ingrese el nombre del cliente';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  filled: true,
+                  hintText: 'Correo electrónico',
+                  labelText: 'Email',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, ingrese el correo electrónico';
+                  }
+                  // Add email format validation if needed
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  filled: true,
+                  hintText: 'Número de teléfono',
+                  labelText: 'Teléfono',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, ingrese el número de teléfono';
+                  }
+                  // Add additional phone number format validation if needed
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _curpController,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  filled: true,
+                  hintText: 'CURP',
+                  labelText: 'Ingresa la CURP',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, ingrese la dirección';
+                  }
+                  return null;
+                },
+              ),
+
+
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    final String name = _nameController.text;
+                    final String email = _emailController.text;
+                    final int? phone = int.tryParse(_phoneController.text);
+                    final String curp = _curpController.text;
+
+
+                    await customerService.addCustomer(name, email, phone ?? 0, curp);
+
+
+                    // Go back to the previous screen
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Guardar'),
+              ),
+            ],
+          ),
+        )
     );
   }
 }

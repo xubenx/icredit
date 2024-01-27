@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:icredit/views/menu_pages.dart';
 
@@ -33,74 +34,95 @@ class LoginPage extends StatefulWidget {
 }
 
 
-
 class _LoginPageState extends State<LoginPage> {
-
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    FormData formData = FormData();
-
     return Scaffold(
       body: Form(
+        key: _formKey,
         child: ListView(
           children: [
             SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  ...[
-                    const Image(
-                      image: NetworkImage('https://firebasestorage.googleapis.com/v0/b/icreditmx69.appspot.com/o/icredit_lowheight.png?alt=media'),
-                      height: 100,
+                  // Other widgets remain the same
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      filled: true,
+                      labelText: 'Email',
                     ),
-                    const Text("Inicio de sesión" ,),
-                    TextFormField(
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an email';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(
+                      filled: true,
+                      labelText: 'Password',
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a password';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextButton(
+                    child: const Text('Login'),
+                    onPressed: () async {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        final user = _emailController.text; // Assuming _emailController now holds the user value
+                        final password = _passwordController.text;
 
-                      autofocus: true,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        filled: true,
-                        hintText: 'Usuario',
-                        labelText: 'Usuario',
-                      ),
-                      onChanged: (value) {
-                        formData.email = value;
-                      },
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        filled: true,
-                        labelText: 'Contraseña',
-                      ),
-                      obscureText: true,
-                      onChanged: (value) {
-                        formData.password = value;
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('Iniciar'),
-                      onPressed: () async {
-                        if (formData.email == "root" && formData.password == "root") {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MenuApp()),
-                          );
-                        } else {
-                          _showDialog('Rellena todos los datos!.');
+                        // Fetch the seller data from Firestore using 'user' field
+                        final snapshot = await FirebaseFirestore.instance
+                            .collection('sellers')
+                            .where('user', isEqualTo: user)
+                            .get();
+
+                        if (snapshot.docs.isEmpty) {
+                          _showDialog('No seller found with this username.');
+                          return;
                         }
-                      },
-                    ),
-                  ].expand(
-                        (widget) =>
-                    [
-                      widget,
-                      const SizedBox(
-                        height: 48,
-                      )
-                    ],
-                  )
+
+                        final sellerData = snapshot.docs.first.data();
+                        if (sellerData['password'] != password) {
+                          _showDialog('Incorrect password.');
+                          return;
+                        }
+
+                        // Get the role and id of the seller
+                        final sellerRole = sellerData['role'];
+                        final sellerId = snapshot.docs.first.id;
+
+
+                        print(sellerRole);
+                        print(sellerId);
+
+                        // If the username and password are correct, navigate to the next page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MenuApp(
+                              role: sellerRole,
+                              id: sellerId,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
@@ -109,7 +131,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
 
   void _showDialog(String message) {
     showDialog<void>(
@@ -127,7 +148,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-
-
-

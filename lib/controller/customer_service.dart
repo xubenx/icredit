@@ -87,11 +87,11 @@ class CustomerService {
 
       Uint8List pdfBytes = await pdf.save();
 
-      String fileName = '${DateTime.now().millisecondsSinceEpoch}.pdf';
+      String fileName = '$userId.pdf';
 
       // Subir el archivo PDF a Firebase Storage
 
-      Reference storageReference = FirebaseStorage.instance.ref().child('pdfs/$userId/$fileName');
+      Reference storageReference = FirebaseStorage.instance.ref().child('pdfs/$fileName');
 
       UploadTask uploadTask = storageReference.putData(pdfBytes);
 

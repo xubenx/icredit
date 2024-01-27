@@ -23,7 +23,7 @@ dependencies:
     sdk: flutter
   firebase_core: ^2.24.2  # Usa la última versión disponible
   cloud_firestore: ^4.13.5  # Usa la última versión disponible
-  firebase_storage: ^11.5.6
+  firebase_storage: ^11.6.0
   cached_network_image: ^3.3.0
   shared_preferences: ^2.2.2
   file_picker: ^6.1.1
@@ -38,12 +38,16 @@ dependencies:
   pdf: ^3.10.7
   image: ^4.1.3
   flutter_pdfview: ^1.3.2
-  google_fonts: ^6.1.0
+  google_fonts: ^4.0.4
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   firebase_auth: ^4.15.3
   url_strategy: ^0.2.0
+  flutter_google_places: ^0.3.0
+  google_maps_flutter: ^2.5.3
+  google_maps_flutter_web: ^0.5.4+3
+  latlong2: ^0.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

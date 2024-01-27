@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:icredit/views/product_pages.dart';
+import 'package:icredit/views/sale_pages.dart';
 import 'package:icredit/views/sellers_pages.dart';
 /// Flutter code sample for [Menu].
 import 'package:firebase_core/firebase_core.dart';
@@ -6,24 +8,32 @@ import 'package:icredit/views/customer_pages.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const MenuApp());
+  runApp(const MenuApp(id: '', role: '',));
+
+
 }
 
 class MenuApp extends StatelessWidget {
-  const MenuApp({super.key});
+  final String id;
+  final String role;
+
+  const MenuApp({Key? key, required this.id, required this.role}) : super(key: key);
+
+
 
   @override
 
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
-      home: const MenuExample(),
+      home: MenuExample(role: role),
     );
   }
 }
 
 class MenuExample extends StatefulWidget {
-  const MenuExample({super.key});
+  final String role;
+  const MenuExample({Key? key, required this.role}) : super(key: key);
 
   @override
   State<MenuExample> createState() => _MenuExampleState();
@@ -37,7 +47,6 @@ class _MenuExampleState extends State<MenuExample> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inicio'),
-
       ),
       drawer: Drawer(
         child: ListView(
@@ -51,7 +60,7 @@ class _MenuExampleState extends State<MenuExample> {
                   image: NetworkImage('https://firebasestorage.googleapis.com/v0/b/icreditmx69.appspot.com/o/icredit.png?alt=media'),
                 )
             ),
-            ListTile(
+            if (widget.role != 'seller') ListTile(
               leading: const Icon(Icons.sell_rounded),
               title: const Text('Vendedores'),
               onTap: () {
@@ -63,10 +72,9 @@ class _MenuExampleState extends State<MenuExample> {
                     MaterialPageRoute(builder: (context) => const PageSellers()),
                   );
                 });
-
               },
             ),
-            ListTile(
+            if (widget.role != 'seller') ListTile(
               leading: const Icon(Icons.account_circle),
               title: const Text('Clientes'),
               onTap: () {
@@ -85,40 +93,23 @@ class _MenuExampleState extends State<MenuExample> {
               onTap: () {
                 setState(() {
                   selectedPage = 'Ventas';
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SalesPage()),
+                  );
                 });
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.money_off),
-              title: const Text('Comisiones'),
-              onTap: () {
-                setState(() {
-                  selectedPage = 'Comisiones';
-                });
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.collections_bookmark_rounded),
-              title: const Text('Diario'),
-              onTap: () {
-                setState(() {
-                  selectedPage = 'Diario';
-                });
-              },
-            ),ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
-              onTap: () {
-                setState(() {
-                  selectedPage = 'Dashboard';
-                });
-              },
-            ),ListTile(
+            if (widget.role != 'seller') ListTile(
               leading: const Icon(Icons.inventory),
-              title: const Text('Dashboard'),
+              title: const Text('Productos'),
               onTap: () {
                 setState(() {
-                  selectedPage = 'Dashboard';
+                  selectedPage = 'Productos';
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PageProducts()),
+                  );
                 });
               },
             ),

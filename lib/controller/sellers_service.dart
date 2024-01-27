@@ -16,6 +16,7 @@ class SellersService {
       'user': user,
       'password': password,
       'isActive': true,
+      'role': 'seller',
       'timestamp': FieldValue.serverTimestamp(),
     });
   }

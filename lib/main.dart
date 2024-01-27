@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:icredit/views/login_pages.dart';
 /// Flutter code sample for [Drawer].
 import 'package:firebase_core/firebase_core.dart';
+import 'package:icredit/views/menu_pages.dart';
+import 'package:icredit/views/product_pages.dart';
+import 'package:icredit/views/sale_pages.dart';
 import 'firebase_options.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -15,7 +18,7 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const PageInicioApp());
+  runApp(MaterialApp(home: LoginApp()));
 }
 
 class PageInicioApp extends StatelessWidget {
