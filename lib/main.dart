@@ -1,10 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:icredit/views/login_pages.dart';
 /// Flutter code sample for [Drawer].
 import 'package:firebase_core/firebase_core.dart';
+import 'package:icredit/views/map_page.dart';
 import 'package:icredit/views/menu_pages.dart';
-import 'package:icredit/views/product_pages.dart';
-import 'package:icredit/views/sale_pages.dart';
 import 'firebase_options.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -18,7 +20,16 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MaterialApp(home: LoginApp()));
+  if (kDebugMode) {
+    try {
+      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+      await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    } catch (e) {
+      // ignore: avoid_print
+      print(e);
+    }
+  }
+  runApp(MaterialApp(home: MyAppMap()));
 }
 
 class PageInicioApp extends StatelessWidget {
@@ -97,6 +108,8 @@ class _PageInicioState extends State<PageInicio> {
 
 
                         print(precioFinal);
+
+
 
 
 

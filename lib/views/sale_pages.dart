@@ -1,13 +1,16 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:icredit/views/customer_pages.dart';
 import 'package:icredit/views/login_pages.dart';
+import 'package:icredit/views/map_page.dart';
 import 'package:icredit/views/menu_pages.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_maps_webservice/places.dart';
+import 'package:google_geocoding_api/google_geocoding_api.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:icredit/controller/customer_service.dart';
 class SalesApp extends StatelessWidget {
@@ -41,7 +44,6 @@ class _SalesPageState extends State<SalesPage> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController curpController = TextEditingController();
-  final TextEditingController engancheController = TextEditingController();
   final TextEditingController abonosSemanasController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final addCustomerForm _form = addCustomerForm();
@@ -52,14 +54,24 @@ class _SalesPageState extends State<SalesPage> {
   double preciodespuesEnganche = 0;
   double preciodelProducto = 0;
   double precioAbonos = 0;
-  LatLng? _selectedLocation;
+  String buffAddress = '';
+  DateTime buyDate = DateTime.now();
+  DateTime firstPaymentDate = DateTime.now();
+
 
 
   @override
+
+
   Widget build(BuildContext context) {
 
-    return Drawer(
-      child: Stepper(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Vender'),
+        automaticallyImplyLeading: true,
+        // Agrega esta línea
+      ),
+      body: Stepper(
         currentStep: _index,
         onStepCancel: () {
           if (_index > 0) {
@@ -140,25 +152,7 @@ class _SalesPageState extends State<SalesPage> {
 
 
 
-            if(engancheController.text == null || engancheController.text.isEmpty){
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('Error'),
-                    content: Text('Por favor ingresa el enganche'),
-                    actions: <Widget>[
-                      TextButton(
-                        child: Text('Cerrar'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            }else if(abonosSemanasController.text == null || abonosSemanasController.text.isEmpty){
+            if(abonosSemanasController.text == null || abonosSemanasController.text.isEmpty){
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -318,108 +312,125 @@ class _SalesPageState extends State<SalesPage> {
           ),
           Step(
             title: const Text('Enganche y abonos'),
-            content: Container(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: engancheController,
-                    textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      icon: Icon(Icons.price_change),
-                      hintText: 'Ingresa el enganche del producto',
-                      labelText: 'Cantidad del enganche',
-                    ),
+            content: Column(
+              children: [
+                TextFormField(
+                  controller: abonosSemanasController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    icon: Icon(Icons.calendar_today),
+                    hintText: 'Ingrese el número de semanas deseadas para pagar el producto',
+                    labelText: 'Número de semanas',
                   ),
-                  TextFormField(
-                    controller: abonosSemanasController,
-                    textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      icon: Icon(Icons.calendar_today),
-                      hintText: 'Ingrese el número de semanas deseadas para pagar el producto',
-                      labelText: 'Número de semanas',
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          Step(title: Text('Desglose de precio final y abonos'), content: Column(
-            children: [
-              Text('Precio Final: $precioFinal'),
-              Text('Precio Después de Enganche: $preciodespuesEnganche'),
-              Text('Precio del Producto: $preciodelProducto'),
-              Text('Precio Abonos: $precioAbonos'),
-            ],
-          ),
+          Step(
+            title: Text('Establecer fechas'),
+            content: Column(
+              children: [
+                Text('Fecha de venta del producto ${buyDate.toString()}'),
+                ElevatedButton(
+                  child: Text('Seleccionar el primer dia de pago:'),
+                  onPressed: () async {
+                    DateTime initialDate = DateTime.now();
+                    while (initialDate.weekday != 5) {
+                      initialDate = initialDate.add(Duration(days: 1));
+                    }
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: initialDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                      selectableDayPredicate: (DateTime date) {
+                        // Only allow Fridays to be selected.
+                        return date.weekday == 5;
+                      },
+                    );
+                    if (pickedDate != null) {
+                      // Do something with the picked date
+                      firstPaymentDate = pickedDate;
+
+                      print(pickedDate);
+                    }
+                  },
+                ),
+                Text('Fecha de primer pago: ${firstPaymentDate.toString()}'),
+              ],
+            ),
           ),
           Step(
             title: Text('Información básica del cliente'),
-            content: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    textInputAction: TextInputAction.next,
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      icon: Icon(Icons.person),
-                      hintText: 'Ingresa el nombre del cliente',
-                      labelText: 'Nombre',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa el nombre del cliente';
-                      }
-                      return null;
-                    },
+            content: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Center(
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        textInputAction: TextInputAction.next,
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          icon: Icon(Icons.person),
+                          hintText: 'Ingresa el nombre del cliente',
+                          labelText: 'Nombre',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingresa el nombre del cliente';
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        textInputAction: TextInputAction.next,
+                        controller: phoneController,
+                        decoration: const InputDecoration(
+                          icon: Icon(Icons.phone),
+                          hintText: 'Ingresa el teléfono del cliente',
+                          labelText: 'Teléfono',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingresa el teléfono del cliente';
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        textInputAction: TextInputAction.next,
+                        controller: emailController,
+                        decoration: const InputDecoration(
+                          icon: Icon(Icons.email),
+                          hintText: 'Ingresa el correo del cliente',
+                          labelText: 'Correo',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingresa el correo del cliente';
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        textInputAction: TextInputAction.next,
+                        controller: curpController,
+                        decoration: const InputDecoration(
+                          icon: Icon(Icons.badge),
+                          hintText: 'Ingresa la CURP del cliente',
+                          labelText: 'CURP',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingresa la CURP del cliente';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                   ),
-                  TextFormField(
-                    textInputAction: TextInputAction.next,
-                    controller: phoneController,
-                    decoration: const InputDecoration(
-                      icon: Icon(Icons.phone),
-                      hintText: 'Ingresa el teléfono del cliente',
-                      labelText: 'Teléfono',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa el teléfono del cliente';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    textInputAction: TextInputAction.next,
-                    controller: emailController,
-                    decoration: const InputDecoration(
-                      icon: Icon(Icons.email),
-                      hintText: 'Ingresa el correo del cliente',
-                      labelText: 'Correo',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa el correo del cliente';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    textInputAction: TextInputAction.next,
-                    controller: curpController,
-                    decoration: const InputDecoration(
-                      icon: Icon(Icons.badge),
-                      hintText: 'Ingresa la CURP del cliente',
-                      labelText: 'CURP',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa la CURP del cliente';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -429,29 +440,10 @@ class _SalesPageState extends State<SalesPage> {
               onTap: () {
                 // Aquí puedes manejar el toque en el mapa y actualizar _selectedLocation
               },
-              child: Container(
-                height: 300, // Define la altura que necesites
-                width: double.infinity, // Toma
-                child: GoogleMap(
-                  initialCameraPosition: const CameraPosition(
-                    target: LatLng(21.020058, -101.870421),
-                    zoom: 11.0,
-                  ),
-                  markers: _selectedLocation != null
-                      ? {
-                    Marker(
-                      markerId: const MarkerId('selected-location'),
-                      position: _selectedLocation!,
-                    ),
-                  }
-                      : {},
-                  onTap: (LatLng location) {
-                    setState(() {
-                      _selectedLocation = location;
-                    });
-                    print(_selectedLocation);
-                  },
-                ),
+              child: Column(
+                children: [
+                  Text(buffAddress)
+                ],
               ),
             ),
           ),
@@ -465,6 +457,17 @@ class _SalesPageState extends State<SalesPage> {
                   await customerService.seleccionarImagenesYConvertirAPdf(userId);
                 },
               ),
+            ),
+          ),
+          Step(
+            title: Text('Desglose de información'),
+            content: Column(
+              children: [
+                Text('Nombre: ${nameController.text}'),
+                Text('Teléfono: ${phoneController.text}'),
+                Text('Correo: ${emailController.text}'),
+                Text('CURP: ${curpController.text}'),
+              ],
             ),
           ),
         ],
@@ -485,4 +488,102 @@ Future<DocumentSnapshot?> checkIfImeiExists(String imei) async {
       .get();
 
   return snapshot.docs.isNotEmpty ? snapshot.docs.first : null;
+}
+
+
+Future<String> getAddressFromLatLng(double latitude, double longitude) async {
+  try {
+
+    const String googelApiKey = 'AIzaSyA2eeEBJqcBHM4MBQ2sD8zc8oufNZcbzY4';
+    final bool isDebugMode = true;
+    final api = GoogleGeocodingApi(googelApiKey, isLogged: isDebugMode);
+    final reversedSearchResults = await api.reverse(
+      '${latitude},${longitude}',
+      language: 'es',
+    );
+
+    return reversedSearchResults.results.first.formattedAddress;
+  } catch (e) {
+    print(e);
+    return "Failed to get address";
+  }
+}
+
+
+
+
+class AutocompleteService {
+  final String apiKey;
+
+  AutocompleteService(this.apiKey);
+
+  Future<List<String>> getAutocomplete(String input) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=$apiKey&language=es';
+    var response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      final predictions = jsonResponse['predictions'] as List;
+
+      List<String> placesList = predictions.map((p) => p['description'].toString()).toList();
+      return placesList;
+    } else {
+      throw Exception('Failed to load places');
+    }
+  }
+}
+class AddressSearch extends StatefulWidget {
+  @override
+  _AddressSearchState createState() => _AddressSearchState();
+}
+
+class _AddressSearchState extends State<AddressSearch> {
+  TextEditingController _controller = TextEditingController();
+  List<String> _placesList = [];
+  AutocompleteService _autocompleteService;
+
+  _AddressSearchState() : _autocompleteService = AutocompleteService("TU_CLAVE_API");
+
+  void _onSearchChanged(String value) async {
+    if (value.isNotEmpty) {
+      var places = await _autocompleteService.getAutocomplete(value);
+      setState(() {
+        _placesList = places;
+      });
+    } else {
+      setState(() {
+        _placesList = [];
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            icon: Icon(Icons.search),
+            hintText: 'Busca una dirección',
+          ),
+          onChanged: _onSearchChanged,
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _placesList.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(_placesList[index]),
+                onTap: () {
+                  // Manejar la selección aquí
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 }

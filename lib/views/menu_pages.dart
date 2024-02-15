@@ -8,9 +8,6 @@ import 'package:icredit/views/customer_pages.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const MenuApp(id: '', role: '',));
-
-
 }
 
 class MenuApp extends StatelessWidget {
@@ -20,26 +17,33 @@ class MenuApp extends StatelessWidget {
   const MenuApp({Key? key, required this.id, required this.role}) : super(key: key);
 
 
-
   @override
 
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
-      home: MenuExample(role: role),
+      home: MenuExample(role: role, id: id,),
     );
   }
 }
 
 class MenuExample extends StatefulWidget {
   final String role;
-  const MenuExample({Key? key, required this.role}) : super(key: key);
+  final String id;
+  const MenuExample({Key? key, required this.role,required this.id}) : super(key: key);
 
   @override
-  State<MenuExample> createState() => _MenuExampleState();
+
+  State<MenuExample> createState() => _MenuExampleState(role: role, id: id);
 }
 
+
+
 class _MenuExampleState extends State<MenuExample> {
+  final String role;
+  final String id;
+
+  _MenuExampleState({Key? key, required this.role,required this.id});
   String selectedPage = '';
 
   @override
@@ -108,7 +112,7 @@ class _MenuExampleState extends State<MenuExample> {
                   selectedPage = 'Productos';
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const PageProducts()),
+                    MaterialPageRoute(builder: (context) => ProductPage(role: role,id: id)),
                   );
                 });
               },
