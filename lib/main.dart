@@ -7,6 +7,7 @@ import 'package:icredit/views/login_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:icredit/views/map_page.dart';
 import 'package:icredit/views/menu_pages.dart';
+import 'package:icredit/views/sale_pages.dart';
 import 'firebase_options.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -29,7 +30,7 @@ void main() async{
       print(e);
     }
   }
-  runApp(MaterialApp(home: MyAppMap()));
+  runApp(MaterialApp(home: SalesApp()));
 }
 
 class PageInicioApp extends StatelessWidget {

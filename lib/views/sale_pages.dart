@@ -66,11 +66,7 @@ class _SalesPageState extends State<SalesPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Vender'),
-        automaticallyImplyLeading: true,
-        // Agrega esta línea
-      ),
+
       body: Stepper(
         currentStep: _index,
         onStepCancel: () {
@@ -436,17 +432,9 @@ class _SalesPageState extends State<SalesPage> {
           ),
           Step(
             title: Text('Agregar ubicación'),
-            content: GestureDetector(
-              onTap: () {
-                // Aquí puedes manejar el toque en el mapa y actualizar _selectedLocation
-              },
-              child: Column(
-                children: [
-                  Text(buffAddress)
-                ],
-              ),
-            ),
+            content: MyAppMap(), // Asumiendo que MyAppMap es tu widget combinado de mapa y autocompletado
           ),
+
           Step(
             title: Text("Agregar fotos y documentos"),
             content: Center(
