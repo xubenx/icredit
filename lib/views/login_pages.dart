@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     decoration: const InputDecoration(
                       filled: true,
-                      labelText: 'Email',
+                      labelText: 'Usuario',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _passwordController,
                     decoration: const InputDecoration(
                       filled: true,
-                      labelText: 'Password',
+                      labelText: 'Contraseña',
                     ),
                     obscureText: true,
                     validator: (value) {

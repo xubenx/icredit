@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
@@ -13,30 +12,26 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:icredit/controller/customer_service.dart';
-class SalesApp extends StatelessWidget {
-  const SalesApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Vender')),
-        body: const Center(
-          child: SalesPage(),
-        ),
-      ),
-    );
-  }
-}
+
+
 
 class SalesPage extends StatefulWidget {
-  const SalesPage({super.key});
+  String id;
+  String role;
+  SalesPage({super.key, required this.id, required this.role}) ;
+
+
 
   @override
-  State<SalesPage> createState() => _SalesPageState();
+  State<SalesPage> createState() => _SalesPageState(role: role, id: id);
 }
 
 class _SalesPageState extends State<SalesPage> {
+  final String role;
+  final String id;
+  _SalesPageState({Key? key, required this.role, required this.id});
+
   int _index = 0;
   CustomerService customerService = CustomerService();
   final TextEditingController imeiController = TextEditingController();
@@ -463,12 +458,6 @@ class _SalesPageState extends State<SalesPage> {
     );
   }
 }
-
-
-
-
-
-
 Future<DocumentSnapshot?> checkIfImeiExists(String imei) async {
   final snapshot = await FirebaseFirestore.instance
       .collection('products')
@@ -477,28 +466,6 @@ Future<DocumentSnapshot?> checkIfImeiExists(String imei) async {
 
   return snapshot.docs.isNotEmpty ? snapshot.docs.first : null;
 }
-
-
-Future<String> getAddressFromLatLng(double latitude, double longitude) async {
-  try {
-
-    const String googelApiKey = 'AIzaSyA2eeEBJqcBHM4MBQ2sD8zc8oufNZcbzY4';
-    final bool isDebugMode = true;
-    final api = GoogleGeocodingApi(googelApiKey, isLogged: isDebugMode);
-    final reversedSearchResults = await api.reverse(
-      '${latitude},${longitude}',
-      language: 'es',
-    );
-
-    return reversedSearchResults.results.first.formattedAddress;
-  } catch (e) {
-    print(e);
-    return "Failed to get address";
-  }
-}
-
-
-
 
 class AutocompleteService {
   final String apiKey;
@@ -521,57 +488,4 @@ class AutocompleteService {
     }
   }
 }
-class AddressSearch extends StatefulWidget {
-  @override
-  _AddressSearchState createState() => _AddressSearchState();
-}
 
-class _AddressSearchState extends State<AddressSearch> {
-  TextEditingController _controller = TextEditingController();
-  List<String> _placesList = [];
-  AutocompleteService _autocompleteService;
-
-  _AddressSearchState() : _autocompleteService = AutocompleteService("TU_CLAVE_API");
-
-  void _onSearchChanged(String value) async {
-    if (value.isNotEmpty) {
-      var places = await _autocompleteService.getAutocomplete(value);
-      setState(() {
-        _placesList = places;
-      });
-    } else {
-      setState(() {
-        _placesList = [];
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            icon: Icon(Icons.search),
-            hintText: 'Busca una dirección',
-          ),
-          onChanged: _onSearchChanged,
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: _placesList.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(_placesList[index]),
-                onTap: () {
-                  // Manejar la selección aquí
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}

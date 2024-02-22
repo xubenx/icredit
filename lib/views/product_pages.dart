@@ -1,24 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import '../model/product.dart'; // Asegúrate de importar tu modelo Product
-import '../controller/product_service.dart'; // Importa ProductService
-
-void main() async{
-  WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(const ProductPage(id: '', role: '',));
-
-
-}
-
+import '../model/product.dart';
+import '../controller/product_service.dart';
 
 class ProductPage extends StatelessWidget {
-  final String id;
-  final String role;
-
-  const ProductPage({Key? key, required this.id, required this.role}) : super(key: key);
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,10 +20,10 @@ class ProductForm extends StatefulWidget {
   const ProductForm({Key? key, this.product}) : super(key: key);
 
   @override
-  _ProductFormState createState() => _ProductFormState();
+  ProductFormState createState() => ProductFormState();
 }
 
-class _ProductFormState extends State<ProductForm> {
+class ProductFormState extends State<ProductForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _sellPriceController = TextEditingController();
@@ -52,26 +36,46 @@ class _ProductFormState extends State<ProductForm> {
   final TextEditingController _percentageController = TextEditingController();
   final TextEditingController _buyPriceCreditController = TextEditingController();
   final TextEditingController _hookPriceController = TextEditingController();
-  // Agrega aquí más controladores si necesitas más campos.
+  final TextEditingController _miniumMountController = TextEditingController(); // Nuevo controlador para monto mínimo
+
+  final List<String> _colors = [
+    'Gris y negro', 'Blanco', 'Azul', 'Verde', 'Amarillo',
+    'Gris espacial', 'Plata', 'Oro', 'Rosa', 'Negro mate',
+    'Negro brillante', 'Oro rosado', 'Rojo', 'Dorado',
+    'Verde noche', 'Blanco estrella', 'Medianoche',
+    'Azul pacífico', 'Grafito', 'Malva', 'Azul alpino',
+    'Morado oscuro', 'Negro espacial', 'Púrpura'
+  ];
+
+  final List<int> _capacities = [32, 64, 128, 256, 512, 1024, 2048];
+
+  String? _selectedColor;
+  int? _selectedCapacity;
 
   @override
   void initState() {
     super.initState();
     if (widget.product != null) {
-      // Precarga los datos si estás editando un producto existente
-      _nameController.text = widget.product!.name ?? '';
-      _sellPriceController.text = widget.product!.sellPrice?.toString() ?? '';
-      _buyPriceController.text = widget.product!.buyPrice?.toString() ?? '';
-      _imeiController.text = widget.product!.imei ?? '';
-      _colorController.text = widget.product!.details?['color'] ?? '';
-      _storageController.text = widget.product!.details?['storage']?.toString() ?? '';
-      _batteryController.text = widget.product!.details?['battery']?.toString() ?? '';
-      _modelController.text = widget.product!.details?['model'] ?? '';
-      _percentageController.text = widget.product!.details?['percentage']?.toString() ?? '';
-      _buyPriceCreditController.text = widget.product!.buyPriceCredit?.toString() ?? '';
-      _hookPriceController.text = widget.product!.hookPrice?.toString() ?? '';
-      // Agrega más campos según sea necesario
+      _preLoadProductData();
     }
+  }
+
+  void _preLoadProductData() {
+    final product = widget.product!;
+    _nameController.text = product.name ?? '';
+    _sellPriceController.text = product.sellPrice?.toString() ?? '';
+    _buyPriceController.text = product.buyPrice?.toString() ?? '';
+    _imeiController.text = product.imei ?? '';
+    _colorController.text = product.details?['color'] ?? '';
+    _storageController.text = product.details?['storage']?.toString() ?? '';
+    _batteryController.text = product.details?['battery']?.toString() ?? '';
+    _modelController.text = product.details?['model'] ?? '';
+    _percentageController.text = product.details?['percentage']?.toString() ?? '';
+    _buyPriceCreditController.text = product.buyPriceCredit?.toString() ?? '';
+    _hookPriceController.text = product.hookPrice?.toString() ?? '';
+    _selectedColor = product.details?['color'];
+    _miniumMountController.text = product.details?['miniumMount']?.toString() ?? ''; // Asignar valor a controlador de monto mínimo
+    _selectedCapacity = int.tryParse(product.details?['storage']?.toString() ?? '');
   }
 
   @override
@@ -79,64 +83,155 @@ class _ProductFormState extends State<ProductForm> {
     return Form(
       key: _formKey,
       child: ListView(
-        padding: EdgeInsets.all(16.0),
-        children: <Widget>[
-          TextFormField(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildTextField(
             controller: _nameController,
-            decoration: InputDecoration(labelText: 'Nombre del Producto'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor ingresa el nombre del producto';
-              }
-              return null;
+            label: 'Nombre',
+            hint: 'Ingresa el nombre del producto',
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _modelController,
+            label: 'Modelo',
+            hint: 'Ingresa el modelo',
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _sellPriceController,
+            label: 'Precio de venta',
+            hint: 'Ingresa el precio de venta',
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _buyPriceController,
+            label: 'Precio de compra',
+            hint: 'Ingresa el precio de compra',
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 10),
+          _buildDropdownField(
+            currentValue: _selectedColor,
+            items: _colors,
+            label: 'Color',
+            onChanged: (newValue) {
+              setState(() => _selectedColor = newValue);
             },
           ),
-          // Agrega más TextFormField para otros campos como precio de venta, IMEI, etc.
-          ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                // Llama a tu método para añadir o actualizar el producto aquí
-                _saveOrUpdateProduct();
-              }
+          const SizedBox(height: 10),
+          _buildDropdownField(
+            currentValue: _selectedCapacity?.toString(),
+            items: _capacities.map((c) => c.toString()).toList(),
+            label: 'Capacidad',
+            onChanged: (newValue) {
+              setState(() => _selectedCapacity = int.tryParse(newValue ?? ''));
             },
-            child: Text('Guardar Producto'),
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _imeiController,
+            label: 'IMEI',
+            hint: 'Ingresa el IMEI',
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _batteryController,
+            label: 'Batería',
+            hint: 'Ingresa la capacidad de la batería',
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _percentageController,
+            label: 'Porcentaje de ganancia',
+            hint: 'Ingresa el porcentaje de ganancia',
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _buyPriceCreditController,
+            label: 'Precio de compra a crédito',
+            hint: 'Ingresa el precio de compra a crédito',
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _hookPriceController,
+            label: 'Precio de enganche',
+            hint: 'Ingresa el precio de gancho',
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _miniumMountController,
+            label: 'Monto mínimo al mes', // Etiqueta para monto mínimo
+            hint: 'Ingresa el monto mínimo', // Indicación para monto mínimo
+            keyboardType: TextInputType.number, // Teclado numérico para monto mínimo
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _saveProduct,
+            child: const Text('Guardar'),
           ),
         ],
       ),
     );
   }
 
-  void _saveOrUpdateProduct() async {
-    // Aquí añadirías la lógica para guardar o actualizar el producto
-    // Utilizando el ProductService y los controladores de texto para obtener los valores de los campos
-    ProductService productService = ProductService();
-    if (widget.product == null) {
-      // Lógica para añadir un nuevo producto
-      await productService.addProduct(
-        _nameController.text,
-        double.parse(_sellPriceController.text),
-        double.parse(_buyPriceController.text),
-        _imeiController.text,
-        {}, // Aquí deberías pasar los detalles adicionales como un Map
-        0.0, // Precio de compra a crédito, ajusta según corresponda
-        0.0, // Precio de gancho, ajusta según corresponda
-      );
-    } else {
-      // Lógica para actualizar un producto existente
-      // Asegúrate de implementar un método en ProductService para actualizar basado en el IMEI o un ID específico
-    }
-
-    // Después de guardar o actualizar, puedes volver a la pantalla anterior o mostrar un mensaje
-    Navigator.pop(context);
+  TextFormField _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      keyboardType: keyboardType,
+      validator: validator ?? (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor ingresa $label';
+        }
+        return null;
+      },
+    );
   }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _sellPriceController.dispose();
-    _buyPriceController.dispose();
-    _imeiController.dispose();
-    // Asegúrate de deshacerte de todos los controladores
-    super.dispose();
-       }
+  DropdownButtonFormField<String> _buildDropdownField({
+    String? currentValue,
+    required List<String> items,
+    required String label,
+    required void Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: currentValue,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onChanged: onChanged,
+      items: items.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor selecciona $label';
+        }
+        return null;
+      },
+    );
+  }
+
+  void _saveProduct() {
+    // Implementación de guardado de producto
+    // Esta función debe implementarse según la lógica específica de tu aplicación.
+  }
 }
