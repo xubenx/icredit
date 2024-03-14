@@ -99,7 +99,7 @@ class _MenuExampleState extends State<MenuExample> {
                   selectedPage = 'Ventas';
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SalesPage(role: role,id: id)),
+                    MaterialPageRoute(builder: (context) => SalesPageView(role: role,id: id)),
                   );
                 });
               },
@@ -112,7 +112,7 @@ class _MenuExampleState extends State<MenuExample> {
                   selectedPage = 'Productos';
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ProductPage()),
+                    MaterialPageRoute(builder: (context) => ProductPageView()),
                   );
                 });
               },

@@ -4,13 +4,18 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 void main() {
-  runApp(MyAppMap());
+  runApp(MyAppMap(onLocationSelected: (lat , lng , adress) {  },));
 }
 
 class MyAppMap extends StatefulWidget {
+  final Function(double, double, String) onLocationSelected;
+
+  MyAppMap({Key? key, required this.onLocationSelected}) : super(key: key);
+
   @override
   _MyAppMapState createState() => _MyAppMapState();
 }
+
 
 class _MyAppMapState extends State<MyAppMap> {
   String _selectedAddress = '';
@@ -48,6 +53,8 @@ class _MyAppMapState extends State<MyAppMap> {
           ),
         );
         _selectedAddress = address; // Guarda la dirección obtenida en una variable de estado
+        widget.onLocationSelected(lat, lng, _selectedAddress); // Llama a la función onLocationSelected con las coordenadas
+
       });
     } else {
       throw Exception('Failed to load address');
@@ -107,6 +114,8 @@ class _MyAppMapState extends State<MyAppMap> {
                   );
                 },
               ),
+              SizedBox(height: 10),
+
 
 
               Container(
@@ -136,5 +145,6 @@ class _MyAppMapState extends State<MyAppMap> {
       throw Exception('Failed to load suggestions');
     }
   }
+
 
 }

@@ -10,6 +10,9 @@ class CustomerService {
   final CollectionReference customers =
   FirebaseFirestore.instance.collection('customers');
 
+  final CollectionReference sales =
+  FirebaseFirestore.instance.collection('sales');
+
   Future<void> addCustomer(
 
 
@@ -61,7 +64,7 @@ class CustomerService {
       }).toList();
     });
   }
-  Future<void> seleccionarImagenesYConvertirAPdf(String userId) async {
+  Future<void> seleccionarImagenesYConvertirAPdf(String saleId) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: true,
@@ -87,7 +90,8 @@ class CustomerService {
 
       Uint8List pdfBytes = await pdf.save();
 
-      String fileName = '$userId.pdf';
+
+      String fileName = '$saleId.pdf';
 
       // Subir el archivo PDF a Firebase Storage
 
@@ -99,11 +103,6 @@ class CustomerService {
 
       // Obtener la URL del archivo PDF en Firebase Storage
       String pdfUrl = await storageReference.getDownloadURL();
-
-      // Ahora puedes utilizar pdfUrl según tus necesidades (por ejemplo, guardarlo en Firestore).
-      return customers.doc(userId).update({
-        'documents': pdfUrl,
-      });
 
     } else {
       print("No se seleccionaron imágenes.");

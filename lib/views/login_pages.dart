@@ -85,24 +85,39 @@ class _LoginPageState extends State<LoginPage> {
                         final user = _emailController.text; // Assuming _emailController now holds the user value
                         final password = _passwordController.text;
 
+                        print('Usuario: $user Contraseña: $password');
+
                         // Fetch the seller data from Firestore using 'user' field
                         final snapshot = await FirebaseFirestore.instance
                             .collection('sellers')
                             .where('user', isEqualTo: user)
                             .get();
 
+// Imprime los datos de cada documento.
+                        for (var doc in snapshot.docs) {
+                          print(doc.data()); // Esto imprimirá los datos en forma de mapa.
+                        }
+
                         if (snapshot.docs.isEmpty) {
                           _showDialog('No seller found with this username.');
                           return;
                         }
 
+
+
                         final sellerData = snapshot.docs.first.data();
-                        if (sellerData['password'] != password) {
-                          _showDialog('Incorrect password.');
+
+
+                        if (sellerData['password'].trim() == password.trim()) {
+
+                        }else{
+                          _showDialog('Datos incorrectos. Intente de nuevo.');
                           return;
+
+
                         }
 
-                        // Get the role and id of the seller
+
                         final sellerRole = sellerData['role'];
                         final sellerId = snapshot.docs.first.id;
 
