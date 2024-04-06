@@ -11,12 +11,12 @@ import 'package:icredit/controller/sales_service.dart';
 import 'package:icredit/model/product.dart';
 import 'package:icredit/views/customer_pages.dart';
 import 'package:icredit/views/login_pages.dart';
-import 'package:icredit/views/map_page.dart';
 import 'package:icredit/views/menu_pages.dart';
 import 'package:google_geocoding_api/google_geocoding_api.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:icredit/controller/customer_service.dart';
+import 'package:icredit/views/sales/map_page.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -35,7 +35,8 @@ class _SalesPageState extends State<SalesPage> {
   int _index = 0;
 
   // Controladores para los campos de texto
-  final TextEditingController firstPaymentDateController = TextEditingController();
+  final TextEditingController firstPaymentDateController =
+      TextEditingController();
 
   final TextEditingController imeiController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
@@ -63,7 +64,7 @@ class _SalesPageState extends State<SalesPage> {
   DateTime buyDate = DateTime.now(); // Fecha de compra
   DateTime firstPaymentDate = DateTime.now(); // Fecha del primer pago
 
-  double buyPrice = 0 ;
+  double buyPrice = 0;
   double sellingPriceCredit = 0;
   double hookPrice = 0;
   double minimumPayment = 0;
@@ -83,7 +84,8 @@ class _SalesPageState extends State<SalesPage> {
   void _loadSales() async {
     QuerySnapshot salesSnapshot;
     if (widget.role == 'admin') {
-      salesSnapshot = await FirebaseFirestore.instance.collection('sales').get();
+      salesSnapshot =
+          await FirebaseFirestore.instance.collection('sales').get();
     } else {
       salesSnapshot = await FirebaseFirestore.instance
           .collection('sales')
@@ -100,73 +102,81 @@ class _SalesPageState extends State<SalesPage> {
     });
   }
 
-
-
-
-
   late bool available;
   // Servicios
   final CustomerService customerService = CustomerService();
   final SalesService salesService = SalesService();
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Proceso de Venta"),
+        body: MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        // Define el color primario de la aplicación
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          primary: Colors.black,
+          secondary: Colors.grey,
+          background: Colors.white,
+        ),
       ),
-      body: Stepper(
-        currentStep: _index,
-        onStepContinue: _goToNextStep,
-        onStepCancel: _goToPreviousStep,
-        steps: _getSteps(),
-        controlsBuilder: (BuildContext context, ControlsDetails details) {
-          if(_index < 6) {
-            return Row(
-              children: <Widget>[
-                ElevatedButton(
-                  onPressed: details.onStepContinue,
-                  child: const Text('Continuar'),
-                ),
-                TextButton(
-                  onPressed: details.onStepCancel,
-                  child: const Text('Atrás'),
-                ),
-              ],
-            );
-          } else {
-            return AlertDialog(
-              title: Text('Confirmación'),
-              content: Text('¿Estás seguro de que deseas finalizar el proceso de venta?'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Cierra el diálogo
-                  },
-                  child: Text('Cancelar'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    _showLoadingDialog();
-
-                    await _finalizarVenta(); // Lógica para finalizar la venta
-                  },
-                  child: Text('Finalizar'),
-                ),
-              ],
-            );
-          }
-        },
+      home: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text('Venta a crédito'),
+        ),
+        body: Center(
+          child: Stepper(
+            currentStep: _index,
+            onStepContinue: _goToNextStep,
+            onStepCancel: _goToPreviousStep,
+            steps: _getSteps(),
+            controlsBuilder: (BuildContext context, ControlsDetails details) {
+              if (_index < 6) {
+                return Row(
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: details.onStepContinue,
+                      child: const Text('Continuar'),
+                    ),
+                    TextButton(
+                      onPressed: details.onStepCancel,
+                      child: const Text('Atrás'),
+                    ),
+                  ],
+                );
+              } else {
+                return AlertDialog(
+                  title: Text('Confirmación'),
+                  content: Text(
+                      '¿Estás seguro de que deseas finalizar el proceso de venta?'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Cierra el diálogo
+                      },
+                      child: Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        _finalizarVenta(); // Lógica para finalizar la venta
+                      },
+                      child: Text('Finalizar'),
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
+        ),
       ),
-    );
+    ));
   }
 
   List<Step> _getSteps() {
-
-
     return [
       Step(
         title: const Text('Seleccionar Producto'),
@@ -183,15 +193,15 @@ class _SalesPageState extends State<SalesPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+            Divider(height: 1,thickness: 1,endIndent: 10,indent:40,color: Colors.grey,),
             SizedBox(height: 20),
-            ElevatedButton.icon(onPressed: () {
-              _buscarProducto();
-            },
+            ElevatedButton.icon(
+                onPressed: () {
+                  _buscarProducto();
+                },
                 icon: Icon(Icons.search),
-                label: Text('Buscar Producto')
-            ),
+                label: Text('Buscar Producto')),
             SizedBox(height: 20),
-
           ],
         ),
         isActive: _index >= 0,
@@ -211,20 +221,12 @@ class _SalesPageState extends State<SalesPage> {
               readOnly: true, // Hace el campo de texto de solo lectura
               onTap: () async {
                 // Abre el DatePicker cuando el usuario toca el campo
-                DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: firstPaymentDate,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2100),
-                );
+               _selectFirstPaymentDate();
                 // Actualiza el valor del campo si el usuario selecciona una fecha
-                if (pickedDate != null && pickedDate != firstPaymentDate) {
-                  setState(() {
-                    firstPaymentDate = pickedDate;
-                    // Actualiza el texto del controlador para mostrar la fecha seleccionada
-                    firstPaymentDateController.text = DateFormat('yyyy-MM-dd').format(firstPaymentDate);
-                  });
-                }
+                setState(() {
+                  firstPaymentDateController.text =
+                      firstPaymentDate.toString().substring(0, 10);
+                });
               },
             ),
             SizedBox(height: 20),
@@ -295,7 +297,8 @@ class _SalesPageState extends State<SalesPage> {
               TextFormField(
                 controller: curpController,
                 decoration: InputDecoration(
-                  icon: Icon(Icons.fingerprint), // Icono que podría representar la CURP
+                  icon: Icon(Icons
+                      .fingerprint), // Icono que podría representar la CURP
                   labelText: 'CURP del Cliente',
                   hintText: 'Ingresa la CURP',
                   border: OutlineInputBorder(),
@@ -311,18 +314,15 @@ class _SalesPageState extends State<SalesPage> {
                 },
               ),
               SizedBox(height: 20),
-
             ],
           ),
         ),
         isActive: _index >= 2,
       ),
-
       Step(
         title: Text('Agregar Ubicación'),
         content: MyAppMap(
           onLocationSelected: (lat, lng, address) {
-
             setState(() {
               this.lat = lat;
               this.lng = lng;
@@ -349,20 +349,20 @@ class _SalesPageState extends State<SalesPage> {
             SizedBox(height: 20),
             selectedImages.isNotEmpty
                 ? Wrap(
-              spacing: 8.0, // Espacio horizontal entre imágenes
-              runSpacing: 4.0, // Espacio vertical entre imágenes
-              children: selectedImages
-                  .map((imgData) => GestureDetector(
-                onTap: () => _showImageDialog(imgData),
-                child: Image.memory(
-                  imgData,
-                  width: 100, // Ancho de la imagen
-                  height: 100, // Alto de la imagen
-                  fit: BoxFit.cover,
-                ),
-              ))
-                  .toList(),
-            )
+                    spacing: 8.0, // Espacio horizontal entre imágenes
+                    runSpacing: 4.0, // Espacio vertical entre imágenes
+                    children: selectedImages
+                        .map((imgData) => GestureDetector(
+                              onTap: () => _showImageDialog(imgData),
+                              child: Image.memory(
+                                imgData,
+                                width: 100, // Ancho de la imagen
+                                height: 100, // Alto de la imagen
+                                fit: BoxFit.cover,
+                              ),
+                            ))
+                        .toList(),
+                  )
                 : Text("No se han seleccionado imágenes."),
             SizedBox(height: 20),
           ],
@@ -371,10 +371,12 @@ class _SalesPageState extends State<SalesPage> {
       ),
       Step(
         title: Text('Desglose de Información'),
-        content: SingleChildScrollView( // Asegúrate de que todo sea scrollable si el contenido es mucho
+        content: SingleChildScrollView(
+          // Asegúrate de que todo sea scrollable si el contenido es mucho
           child: Column(
             children: [
-              Text("Detalles del Producto", style: Theme.of(context).textTheme.headline6),
+              Text("Detalles del Producto",
+                  style: Theme.of(context).textTheme.headline6),
               Divider(),
               ListTile(
                 title: Text('IMEI'),
@@ -386,19 +388,23 @@ class _SalesPageState extends State<SalesPage> {
               ),
               ListTile(
                 title: Text('Modelo'),
-                subtitle: Text('${productDataMap?['details']['model'] ?? 'N/A'}'),
+                subtitle:
+                    Text('${productDataMap?['details']['model'] ?? 'N/A'}'),
               ),
               ListTile(
                 title: Text('Color'),
-                subtitle: Text('${productDataMap?['details']['color'] ?? 'N/A'}'),
+                subtitle:
+                    Text('${productDataMap?['details']['color'] ?? 'N/A'}'),
               ),
               ListTile(
                 title: Text('Capacidad'),
-                subtitle: Text('${productDataMap?['details']['storage'] ?? 'N/A'}'),
+                subtitle:
+                    Text('${productDataMap?['details']['storage'] ?? 'N/A'}'),
               ),
               ListTile(
                 title: Text('Porcentaje de batería'),
-                subtitle: Text('${productDataMap?['details']['battery'] ?? 'N/A'}'),
+                subtitle:
+                    Text('${productDataMap?['details']['battery'] ?? 'N/A'}'),
               ),
               ListTile(
                 title: Text('Precio de venta de contado'),
@@ -406,7 +412,8 @@ class _SalesPageState extends State<SalesPage> {
               ),
               ListTile(
                 title: Text('Precio de venta a crédito'),
-                subtitle: Text('\$${productDataMap?['sellingPriceCredit'] ?? 'N/A'}'),
+                subtitle:
+                    Text('\$${productDataMap?['sellingPriceCredit'] ?? 'N/A'}'),
               ),
               ListTile(
                 title: Text('Enganche'),
@@ -422,7 +429,8 @@ class _SalesPageState extends State<SalesPage> {
               ),
 
               SizedBox(height: 20),
-              Text("Información del Cliente", style: Theme.of(context).textTheme.headline6),
+              Text("Información del Cliente",
+                  style: Theme.of(context).textTheme.headline6),
               Divider(),
               ListTile(
                 title: Text('Nombre'),
@@ -442,7 +450,8 @@ class _SalesPageState extends State<SalesPage> {
               ),
 
               SizedBox(height: 20),
-              Text("Detalles de domicilio", style: Theme.of(context).textTheme.headline6),
+              Text("Detalles de domicilio",
+                  style: Theme.of(context).textTheme.headline6),
               Divider(),
               //ingresar un Mapa estatico de Google Maps en con las coordinadas iniciales lat y lng con zoom
               Container(
@@ -456,7 +465,9 @@ class _SalesPageState extends State<SalesPage> {
                     Marker(
                       markerId: MarkerId('selectedLocation'),
                       position: LatLng(lat, lng),
-                      infoWindow: InfoWindow(title: 'Ubicación Seleccionada', snippet: buffAddress),
+                      infoWindow: InfoWindow(
+                          title: 'Ubicación Seleccionada',
+                          snippet: buffAddress),
                     ),
                   },
                 ),
@@ -466,30 +477,35 @@ class _SalesPageState extends State<SalesPage> {
                 subtitle: Text('$buffAddress'),
               ),
               SizedBox(height: 20),
-              Text("Fotos Seleccionadas", style: Theme.of(context).textTheme.headline6),
+              Text("Fotos Seleccionadas",
+                  style: Theme.of(context).textTheme.headline6),
               Divider(),
               selectedImages.isNotEmpty
                   ? Wrap(
-                spacing: 8.0, // Espacio horizontal entre imágenes
-                runSpacing: 4.0, // Espacio vertical entre imágenes
-                children: selectedImages.map((imgData) => GestureDetector(
-                  onTap: () => _showImageDialog(imgData),
-                  child: Image.memory(
-                    imgData,
-                    width: 100, // Ancho de la imagen
-                    height: 100, // Alto de la imagen
-                    fit: BoxFit.cover,
-                  ),
-                )).toList(),
-              )
+                      spacing: 8.0, // Espacio horizontal entre imágenes
+                      runSpacing: 4.0, // Espacio vertical entre imágenes
+                      children: selectedImages
+                          .map((imgData) => GestureDetector(
+                                onTap: () => _showImageDialog(imgData),
+                                child: Image.memory(
+                                  imgData,
+                                  width: 100, // Ancho de la imagen
+                                  height: 100, // Alto de la imagen
+                                  fit: BoxFit.cover,
+                                ),
+                              ))
+                          .toList(),
+                    )
                   : Text("No se han seleccionado imágenes."),
               SizedBox(height: 20),
-              Text("Detalles de pagos", style: Theme.of(context).textTheme.headline6),
+              Text("Detalles de pagos",
+                  style: Theme.of(context).textTheme.headline6),
               Divider(),
 
               ListTile(
                 title: Text('Fecha del Primer Pago'),
-                subtitle: Text('${DateFormat('yyyy-MM-dd').format(firstPaymentDate)}'),
+                subtitle: Text(
+                    '${DateFormat('yyyy-MM-dd').format(firstPaymentDate)}'),
               ),
               ListTile(
                 title: Text('Monto a pagar en total:'),
@@ -515,34 +531,30 @@ class _SalesPageState extends State<SalesPage> {
                 title: Text('Monto mínimo de pago'),
                 subtitle: Text('\$$minimumPayment'),
               ),
-
-
             ],
           ),
         ),
         isActive: _index >= 5,
       ),
-
       Step(
         title: Text('Confirmación Final'),
         content: Column(
           children: [
             SizedBox(height: 20),
-            Text('Por favor revisa la información antes de finalizar el proceso de venta.'),
+            Text(
+                'Por favor revisa la información antes de finalizar el proceso de venta.'),
             SizedBox(height: 20),
-
           ],
         ),
-
         isActive: _index >= 6,
       ),
     ];
   }
 
-
   void _goToNextStep() {
     print(_index);
-    if (_index < _getSteps().length - 1) { // Asegúrate de no sobrepasar el número de pasos
+    if (_index < _getSteps().length - 1) {
+      // Asegúrate de no sobrepasar el número de pasos
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -575,7 +587,6 @@ class _SalesPageState extends State<SalesPage> {
     }
   }
 
-
   void _goToPreviousStep() {
     if (_index > 0) {
       setState(() {
@@ -592,35 +603,75 @@ class _SalesPageState extends State<SalesPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView( // Usar un SingleChildScrollView por si el contenido es muy largo
-            child: ListBody( // Usar un ListBody para una lista de widgets
+          content: SingleChildScrollView(
+            // Usar un SingleChildScrollView por si el contenido es muy largo
+            child: ListBody(
+              // Usar un ListBody para una lista de widgets
               children: <Widget>[
                 RichText(
                   text: TextSpan(
-                    style: Theme.of(context).textTheme.bodyText2, // Estilo por defecto
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyText2, // Estilo por defecto
                     children: <TextSpan>[
-                      TextSpan(text: 'IMEI: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text: 'IMEI: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                       TextSpan(text: '${productData['imei'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Nombre: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text: 'Nombre: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                       TextSpan(text: '${productData['name'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Modelo: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${productData['details']['model'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Color: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${productData['details']['color'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Capacidad: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${productData['details']['storage'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Porcentaje de batería: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${productData['details']['battery'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Precio de venta contado: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${productData['sellingPrice'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Precio de venta a crédito: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${productData['sellingPriceCredit'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Cantidad de enganche: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${productData['hookPrice'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Monto mínimo de pago: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${productData['miniumMount'] ?? 'N/A'}\n\n'),
-                      TextSpan(text: 'Estado: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${_formatStatus(productData['status'])}\n\n'),
+                      TextSpan(
+                          text: 'Modelo: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text:
+                              '${productData['details']['model'] ?? 'N/A'}\n\n'),
+                      TextSpan(
+                          text: 'Color: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text:
+                              '${productData['details']['color'] ?? 'N/A'}\n\n'),
+                      TextSpan(
+                          text: 'Capacidad: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text:
+                              '${productData['details']['storage'] ?? 'N/A'}\n\n'),
+                      TextSpan(
+                          text: 'Porcentaje de batería: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text:
+                              '${productData['details']['battery'] ?? 'N/A'}\n\n'),
+                      TextSpan(
+                          text: 'Precio de venta contado: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text: '${productData['sellingPrice'] ?? 'N/A'}\n\n'),
+                      TextSpan(
+                          text: 'Precio de venta a crédito: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text:
+                              '${productData['sellingPriceCredit'] ?? 'N/A'}\n\n'),
+                      TextSpan(
+                          text: 'Cantidad de enganche: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text: '${productData['hookPrice'] ?? 'N/A'}\n\n'),
+                      TextSpan(
+                          text: 'Monto mínimo de pago: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text: '${productData['miniumMount'] ?? 'N/A'}\n\n'),
+                      TextSpan(
+                          text: 'Estado: ',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(
+                          text: '${_formatStatus(productData['status'])}\n\n'),
                     ],
                   ),
                 ),
@@ -650,6 +701,8 @@ class _SalesPageState extends State<SalesPage> {
         return 'Inactivo';
       case 'sold':
         return 'Vendido';
+      case 'cashSold':
+        return 'Vendido en efectivo';
       default:
         return 'Desconocido';
     }
@@ -658,46 +711,46 @@ class _SalesPageState extends State<SalesPage> {
 // Ajustes en el método _buscarProducto para usar _showProductDialog
   void _buscarProducto() async {
     try {
-      final productSnapshot = await salesService.getProductById(imeiController.text);
-      if (productSnapshot != null) {
-        final productData = productSnapshot.data() as Map<Object, dynamic>;
+      final Map<String, dynamic>? productData = await salesService.getDetailsById('products', imeiController.text);
+
+      if (productData != null) {
+        double localBuyPrice = productData['buyPrice']?.toDouble() ?? 0.0;
+        double localSellingPriceCredit = productData['sellingPriceCredit']?.toDouble() ?? 0.0;
+        double localHookPrice = productData['hookPrice']?.toDouble() ?? 0.0;
+        double localMinimumPayment = productData['miniumMount']?.toDouble() ?? 0.0;
+
+        // Perform your calculations
+        double localTotalAmount = localSellingPriceCredit; // Adjust this if needed
+        double localBalanceAfterDownPayment = localSellingPriceCredit - localHookPrice; // Adjust if needed
+        double localFinalDebtAmount = localSellingPriceCredit; // Adjust if needed
+
         setState(() {
           this.productData = productData;
-          this.productId = productSnapshot.id;
           this.productDataMap = productData;
-
-          buyPrice = productDataMap?['buyPrice']?.toDouble() ?? 0.0;
-          sellingPriceCredit = productDataMap?['sellingPriceCredit']?.toDouble() ?? 0.0;
-          hookPrice = productDataMap?['hookPrice']?.toDouble() ?? 0.0;
-          minimumPayment = productDataMap?['miniumMount']?.toDouble() ?? 0.0;
-          totalAmount = sellingPriceCredit + sellingPriceCredit;
-          balanceAfterDownPayment = sellingPriceCredit - hookPrice;
-          finalDebtAmount = sellingPriceCredit + balanceAfterDownPayment;
-          ;
-
+          // Update class member variables if they are used in the UI
+          buyPrice = localBuyPrice;
+          sellingPriceCredit = localSellingPriceCredit;
+          hookPrice = localHookPrice;
+          minimumPayment = localMinimumPayment;
+          totalAmount = localTotalAmount + localTotalAmount;
+          balanceAfterDownPayment = localBalanceAfterDownPayment;
+          finalDebtAmount = localFinalDebtAmount + (localTotalAmount - localHookPrice);
         });
 
-        if (productDataMap?['status'] == 'inCredit') {
+        if (productData['status'] == 'inCredit') {
           _showDialog('Error', 'El producto con el IMEI proporcionado no está disponible, ya que se encuentra vendido.');
-          setState(() {
-            available = false;
-          });
+          available = false;
         } else {
-          setState(() {
-            available = true;
-          });
-          // Usar el método personalizado para mostrar el diálogo del producto
-          _showProductDialog('Producto encontrado', productDataMap!);
+          available = true;
+          _showProductDialog('Producto encontrado', productData);
         }
       } else {
-        _showDialog('Error', 'El producto con el ID proporcionado no existe en la base de datos.');
+        _showDialog('Error', 'El producto con el IMEI proporcionado no existe en la base de datos.');
       }
     } catch (e) {
       _showDialog('Error', 'Se produjo un error al buscar el producto: $e');
     }
   }
-
-
 
   // Método para mostrar un diálogo de alerta
   void _showDialog(String title, String content) {
@@ -719,13 +772,18 @@ class _SalesPageState extends State<SalesPage> {
       },
     );
   }
+
   // Método para seleccionar la fecha del primer pago
   Future<void> _selectFirstPaymentDate() async {
+    // Encuentra el próximo viernes desde la fecha actual.
+    DateTime initialDate = _nextFriday(DateTime.now());
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: firstPaymentDate,
+      initialDate: initialDate, // Usa el próximo viernes como fecha inicial
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
+      selectableDayPredicate: _onlyFridays, // Usa el predicado para filtrar los días
     );
     if (picked != null && picked != firstPaymentDate) {
       setState(() {
@@ -734,11 +792,27 @@ class _SalesPageState extends State<SalesPage> {
     }
   }
 
+// Función auxiliar para determinar si un día es viernes.
+  bool _onlyFridays(DateTime day) {
+    return day.weekday == DateTime.friday;
+  }
+
+// Función para obtener el próximo viernes a partir de una fecha dada.
+  DateTime _nextFriday(DateTime from) {
+    // Si hoy es viernes, añade 7 días para el siguiente viernes.
+    // De lo contrario, añade los días restantes hasta el siguiente viernes.
+    int daysToAdd = DateTime.friday - from.weekday;
+    if (daysToAdd <= 0) daysToAdd += 7; // Asegurarse de que sea el siguiente viernes
+    return from.add(Duration(days: daysToAdd));
+  }
+
+
   Future<void> _finalizarVenta() async {
     // Asegúrate de mostrar el diálogo de carga al principio
 
-
     try {
+      _showLoadingDialog();
+
       // Intenta realizar las operaciones necesarias para finalizar la venta
       // Aquí se crea el PDF a partir de imágenes seleccionadas
       final pdfFilePath = await createPdfFromSelectedImages();
@@ -747,7 +821,9 @@ class _SalesPageState extends State<SalesPage> {
       }
 
       // Construir el nombre del archivo PDF con un identificador único
-      String namePdf = widget.id + DateTime.now().microsecondsSinceEpoch.toString() + productId;
+      String namePdf = widget.id +
+          DateTime.now().microsecondsSinceEpoch.toString() +
+          productId;
 
       // Subir el PDF a Firebase y obtener la URL
       String? pdfUrl = await uploadPdfBytesToFirebase(pdfFilePath, namePdf);
@@ -756,12 +832,15 @@ class _SalesPageState extends State<SalesPage> {
       }
 
       // Calcular los montos finales y deudas
-      double finalDebtAmount = productDataMap?['buyPrice'] ?? 0.0;
+      double miniumMount = productDataMap?['miniumMount'] ?? 0.0;
       double hookPrice = productDataMap?['hookPrice'] ?? 0.0;
-      double debtAmount = finalDebtAmount - hookPrice;
+      double sellingCreditPrice = productDataMap?['sellingPriceCredit'] ?? 0.0;
+      double debtAmount = sellingCreditPrice - hookPrice;
+      double tax = debtAmount % 2.75;
 
       // Guardar los detalles de la venta en la base de datos o donde corresponda
       String saleId = await salesService.saveSale(
+
         sellerId: widget.id,
         productImei: imeiController.text,
         customerData: {
@@ -773,39 +852,79 @@ class _SalesPageState extends State<SalesPage> {
           'latitude': lat,
           'longitude': lng,
         },
-        finalDebtAmount: finalDebtAmount,
+        tax: tax,
+        debtCreditAmount: sellingCreditPrice,
         debtAmount: debtAmount,
+
         payments: [
           {
             'amount': hookPrice,
             'date': DateTime.now(),
             'status': 'payment',
-            'description': 'Enganche abono inicial'
+            'description': 'Enganche abono inicial',
+            'amountCommission': hookPrice*.10,
+            'commissionStatus': 'Pendiente',
           },
         ],
-        debtCreditAmount: finalDebtAmount,
         urlFiles: pdfUrl,
         date: DateTime.now(),
-        status: 'inCredit',
+        status: 'inCredit', minPayment: miniumMount, firstPayment: true, firstPaymentDate: firstPaymentDate,
       );
 
-      // Si todo ha ido bien, cerrar el diálogo de carga y mostrar uno de éxito
-      Navigator.of(context, rootNavigator: true).pop(); // Cierra el diálogo de carga
-      _showSuccessDialog();
 
+      Map<String, dynamic> saleData = {
+        'sellerId': widget.id,
+        'productImei': imeiController.text,
+        'customerData': {
+          'name': nameController.text,
+          'phone': phoneController.text,
+          'email': emailController.text,
+          'curp': curpController.text,
+          'address': buffAddress,
+          'latitude': lat,
+          'longitude': lng,
+        },
+        'tax': tax,
+        'debtCreditAmount': sellingCreditPrice,
+        'debtAmount': debtAmount,
+
+        'payments': [
+          {
+            'amount': hookPrice,
+            'date': DateTime.now(),
+            'status': 'payment',
+            'description': 'Enganche abono inicial',
+            'amountCommission': hookPrice*.10,
+            'commissionStatus': 'Pendiente',
+          },
+        ],
+        'urlFiles': pdfUrl,
+        'date': DateTime.now(),
+        'status': 'inCredit', 'minPayment': miniumMount,
+      };
+
+      await salesService.generateAndDownloadTicket(
+        saleId: saleId,
+        saleData: saleData,
+      );
+      // Generar y descargar el ticket de la venta
+      // Si todo ha ido bien, cerrar el diálogo de carga y mostrar uno de éxito
+      Navigator.of(context, rootNavigator: true)
+          .pop(); // Cierra el diálogo de carga
+      _showSuccessDialog();
     } catch (e) {
       // Si algo falla, cierra el diálogo de carga y muestra uno de error
-      Navigator.of(context, rootNavigator: true).pop(); // Cierra el diálogo de carga
+      Navigator.of(context, rootNavigator: true)
+          .pop(); // Cierra el diálogo de carga
       _showErrorDialog('$e');
     }
   }
 
-
-
-  void _showLoadingDialog()  {
+  void _showLoadingDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false, // El usuario no puede cerrar el diálogo tocando fuera de él
+      barrierDismissible:
+          false, // El usuario no puede cerrar el diálogo tocando fuera de él
       builder: (BuildContext context) {
         return Dialog(
           child: Container(
@@ -824,10 +943,10 @@ class _SalesPageState extends State<SalesPage> {
     );
   }
 
-
   void _showSuccessDialog() {
     if (Navigator.canPop(context)) {
-      Navigator.of(context, rootNavigator: true).pop(); // Cierra el diálogo de carga si está abierto
+      Navigator.of(context, rootNavigator: true)
+          .pop(); // Cierra el diálogo de carga si está abierto
     }
 
     showDialog(
@@ -848,9 +967,12 @@ class _SalesPageState extends State<SalesPage> {
               child: Text("Aceptar"),
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => MenuApp(role: widget.role, id: widget.id))
-                ); // Cierra el diálogo de éxito
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MenuApp(
+                            role: widget.role,
+                            id: widget.id))); // Cierra el diálogo de éxito
                 // Cierra el diálogo de éxito
               },
             ),
@@ -862,7 +984,8 @@ class _SalesPageState extends State<SalesPage> {
 
   void _showErrorDialog(String errorMessage) {
     if (Navigator.canPop(context)) {
-      Navigator.of(context, rootNavigator: true).pop(); // Cierra el diálogo de carga si está abierto
+      Navigator.of(context, rootNavigator: true)
+          .pop(); // Cierra el diálogo de carga si está abierto
     }
 
     showDialog(
@@ -891,15 +1014,13 @@ class _SalesPageState extends State<SalesPage> {
     );
   }
 
-
-
-
   Future<Uint8List> createPdfFromSelectedImages() async {
     final pdf = pw.Document();
 
     for (final Uint8List imageData in selectedImages) {
       final image = pw.MemoryImage(imageData);
-      pdf.addPage(pw.Page(build: (pw.Context context) => pw.Center(child: pw.Image(image))));
+      pdf.addPage(pw.Page(
+          build: (pw.Context context) => pw.Center(child: pw.Image(image))));
     }
 
     return pdf.save();
@@ -917,22 +1038,21 @@ class _SalesPageState extends State<SalesPage> {
     );
   }
 
-
-  Future<String?> uploadPdfBytesToFirebase(Uint8List pdfBytes, String saleId) async {
+  Future<String?> uploadPdfBytesToFirebase(
+      Uint8List pdfBytes, String saleId) async {
     String fileName = 'sales/$saleId.pdf';
     try {
-      Reference storageReference = FirebaseStorage.instance.ref().child(fileName);
+      Reference storageReference =
+          FirebaseStorage.instance.ref().child(fileName);
       UploadTask uploadTask = storageReference.putData(pdfBytes);
       await uploadTask.whenComplete(() => null);
+
       return await storageReference.getDownloadURL();
     } catch (e) {
       print("Error al subir el PDF a Firebase Storage: $e");
       return null;
     }
   }
-
-
-
 
   Future<void> _selectImages() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -941,13 +1061,11 @@ class _SalesPageState extends State<SalesPage> {
     );
 
     if (result != null) {
-      List<Uint8List> imageBytes = result.files.map((file) => file.bytes!).toList();
+      List<Uint8List> imageBytes =
+          result.files.map((file) => file.bytes!).toList();
       setState(() {
         selectedImages = imageBytes;
       });
     }
   }
-
 }
-
-

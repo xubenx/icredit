@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:icredit/views/commission_page.dart';
 import 'package:icredit/views/product_pages.dart';
-import 'package:icredit/views/sale_pages.dart';
+import 'package:icredit/views/sales/sale_pages.dart';
 import 'package:icredit/views/sellers_pages.dart';
 /// Flutter code sample for [Menu].
 import 'package:firebase_core/firebase_core.dart';
@@ -78,6 +79,7 @@ class _MenuExampleState extends State<MenuExample> {
                 });
               },
             ),
+            /*
             if (widget.role != 'seller') ListTile(
               leading: const Icon(Icons.account_circle),
               title: const Text('Clientes'),
@@ -89,6 +91,29 @@ class _MenuExampleState extends State<MenuExample> {
                     MaterialPageRoute(builder: (context) => const ClientePage( title: 'Clientes',)),
                   );
                 });
+              },
+            ),*/
+            ListTile(
+              leading: const Icon(Icons.monetization_on),
+              title: const Text('Comisiones'),
+              onTap: () {
+                if (widget.role == 'seller') {
+                  // If the role is seller, navigate directly to their commissions page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SellerCommissionsPage(sellerId: widget.id, role: widget.role,),
+                    ),
+                  );
+                } else {
+                  // Otherwise, navigate to the page showing all commissions
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CommissionsPage(sellerId: widget.id, role: widget.role),
+                    ),
+                  );
+                }
               },
             ),
             ListTile(

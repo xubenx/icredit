@@ -1,11 +1,11 @@
 
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:icredit/views/details_sale_page.dart';
+import 'package:icredit/views/sales/SelectPaymentTypePage.dart';
+import 'package:icredit/views/sales/details_sale_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:icredit/views/add_credit_sale_page.dart';
 
 class SalesPageView extends StatefulWidget {
   final String id;
@@ -14,6 +14,9 @@ class SalesPageView extends StatefulWidget {
   SalesPageView({Key? key, required this.id, required this.role}) : super(key: key);
 
   @override
+
+
+
   State<SalesPageView> createState() => _SalesPageState();
 }
 
@@ -52,30 +55,46 @@ class _SalesPageState extends State<SalesPageView> {
       appBar: AppBar(
         title: Text('Lista de Ventas'),
       ),
-      body: ListView.builder(
-        itemCount: salesList.length,
-        itemBuilder: (context, index) {
-          final sale = salesList[index];
-          // Supongamos que 'productId' es el imei y 'status' es un campo en tu objeto de venta
-          String imei = sale['productId'] ?? 'IMEI no disponible';
-          String status = _formatStatus(sale['status']);
-          String urlFiles = sale['urlFiles'] ?? '';
 
-          return ListTile(
-            title: Text(imei),
-            subtitle: Text(status),
-            onTap: () => _navigateToSaleDetail(sale),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          MaterialPageRoute route = MaterialPageRoute(
-            builder: (context) => SalesPage(id: widget.id, role: widget.role,),
-          );
-          // Lógica para navegar a la página de agregar venta
-        },
-        child: Icon(Icons.add),
+      body: MaterialApp(
+        theme: ThemeData(
+          useMaterial3: true,
+          // Define el color primario de la aplicación
+          colorScheme: ColorScheme.fromSwatch().copyWith(
+            primary: Colors.black,
+            secondary: Colors.grey,
+            background: Colors.white,
+          ),
+        ),
+        home: Scaffold(
+          body: ListView.builder(
+            itemCount: salesList.length,
+            itemBuilder: (context, index) {
+              final sale = salesList[index];
+              // Supongamos que 'productId' es el imei y 'status' es un campo en tu objeto de venta
+              String imei = sale['productId'] ?? 'IMEI no disponible';
+              String status = _formatStatus(sale['status']);
+              String urlFiles = sale['urlFiles'] ?? '';
+
+              return ListTile(
+                title: Text(imei),
+                subtitle: Text(status),
+                onTap: () => _navigateToSaleDetail(sale),
+              );
+            },
+          ),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: Colors.black,
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(
+                    builder: (context) => SelectPaymentTypePage(id: widget.id, role: widget.role),
+                  )
+              );
+            },
+            child: Icon(Icons.add),
+          ),
+        ),
       ),
     );
   }
@@ -98,6 +117,8 @@ class _SalesPageState extends State<SalesPageView> {
         return 'Inactivo';
       case 'sold':
         return 'Vendido';
+      case 'cashSold':
+        return 'Vendido en efectivo';
       default:
         return 'Desconocido';
     }

@@ -55,8 +55,11 @@ class ProductFormState extends State<ProductForm> {
   @override
   void initState() {
     super.initState();
+    _sellingPriceCreditController.addListener(_calculateTax);
+    _hookPriceController.addListener(_calculateTax);
     if (widget.product != null) {
       _preLoadProductData();
+
     }
   }
 
@@ -76,7 +79,20 @@ class ProductFormState extends State<ProductForm> {
     _miniumMountController.text = product.details?['miniumMount']?.toString() ?? ''; // Asignar valor a controlador de monto mínimo
     _selectedCapacity = int.tryParse(product.details?['storage']?.toString() ?? '');
   }
+  double tax = 0;
 
+  void _calculateTax() {
+    double sellingCreditPrice = double.tryParse(_sellingPriceCreditController.text) ?? 0.0;
+    double hookPrice = double.tryParse(_hookPriceController.text) ?? 0.0;
+    double debtAmount = sellingCreditPrice - hookPrice;
+    double tax = debtAmount * 0.0275; // Corregido para calcular un 2.75% de impuesto
+
+    // Actualiza el estado para reflejar el cambio en la interfaz de usuario
+    setState(() {
+      this.tax = tax;
+      // Aquí puedes asignar el valor de 'tax' a una variable de estado que luego se mostrará en la interfaz de usuario
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -84,6 +100,13 @@ class ProductFormState extends State<ProductForm> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _imeiController,
+            label: 'IMEI',
+            hint: 'Ingresa el IMEI',
+          ),
+          const SizedBox(height: 10),
           _buildTextField(
             controller: _nameController,
             label: 'Nombre',
@@ -135,12 +158,7 @@ class ProductFormState extends State<ProductForm> {
               setState(() => _selectedCapacity = int.tryParse(newValue ?? ''));
             },
           ),
-          const SizedBox(height: 10),
-          _buildTextField(
-            controller: _imeiController,
-            label: 'IMEI',
-            hint: 'Ingresa el IMEI',
-          ),
+
           const SizedBox(height: 10),
           _buildTextField(
             controller: _batteryController,
@@ -159,11 +177,12 @@ class ProductFormState extends State<ProductForm> {
           const SizedBox(height: 10),
           _buildTextField(
             controller: _miniumMountController,
-            label: 'Monto mínimo al mes', // Etiqueta para monto mínimo
+            label: 'Monto mínimo a la semana', // Etiqueta para monto mínimo
             hint: 'Ingresa el monto mínimo', // Indicación para monto mínimo
             keyboardType: TextInputType.number, // Teclado numérico para monto mínimo
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          Text('Interes por semana: \$${tax.toStringAsFixed(2)}'),          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: _saveProduct,
             child: const Text('Guardar'),
@@ -172,6 +191,8 @@ class ProductFormState extends State<ProductForm> {
       ),
     );
   }
+
+
 
   TextFormField _buildTextField({
     required TextEditingController controller,
@@ -225,6 +246,7 @@ class ProductFormState extends State<ProductForm> {
     );
   }
 
+
   Future<void> _saveProduct() async {
     ProductService productService = ProductService();
     // Implementación de guardado de producto
@@ -234,23 +256,44 @@ class ProductFormState extends State<ProductForm> {
     int nextSaleId = querySnapshot.docs.length + 1;
 
     if (_formKey.currentState!.validate()) {
-      final product = Product(
-        id: nextSaleId.toString(),
-        name: _nameController.text,
-        buyPrice: double.tryParse(_buyPriceController.text),
-        sellingPrice: double.tryParse(_sellingPriceController.text),
-        imei: _imeiController.text,
-        details: {
-          'color': _selectedColor,
-          'storage': _selectedCapacity,
-          'battery': _batteryController.text,
-          'model': _modelController.text,
-        },
-        miniumMount : double.tryParse(_miniumMountController.text), // Asignar valor a monto mínimo
+      if(double.parse(_miniumMountController.text) < tax){
+          showDialog(context: context, builder:
+          (BuildContext context){
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('El monto mínimo debe ser mayor al interes'),
+              actions: [
+                TextButton(
+                  onPressed: (){
+                    Navigator.pop(context);
+                  },
+                  child: Text('Aceptar'),
+                )
+              ],
+            );
+          }
+          );
+      }else {
+        final product = Product(
+          id: nextSaleId.toString(),
+          name: _nameController.text,
+          buyPrice: double.tryParse(_buyPriceController.text),
+          sellingPrice: double.tryParse(_sellingPriceController.text),
+          imei: _imeiController.text,
+          details: {
+            'color': _selectedColor,
+            'storage': _selectedCapacity,
+            'battery': _batteryController.text,
+            'model': _modelController.text,
+          },
+          miniumMount: double.tryParse(_miniumMountController.text),
+          // Asignar valor a monto mínimo
 
-        sellingPriceCredit: double.tryParse(_sellingPriceCreditController.text),
-        hookPrice: double.tryParse(_hookPriceController.text),
-      );
+          sellingPriceCredit: double.tryParse(
+              _sellingPriceCreditController.text),
+          hookPrice: double.tryParse(_hookPriceController.text),
+        );
+
 
       if (widget.product != null) {
         product.id = widget.product!.id;
@@ -258,7 +301,9 @@ class ProductFormState extends State<ProductForm> {
       } else {
         productService.addProduct(product);
       }
+
       Navigator.pop(context);
-    }
+      }
+      }
   }
 }
