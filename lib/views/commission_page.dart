@@ -239,7 +239,7 @@
       final salesService = SalesService();
       String newStatus = 'Pagado'; // O el nuevo estado que desees establecer
 
-      salesService.updateCommissionStatus(payment.saleId, paymentIndex, newStatus)
+      salesService.updatePaymentStatus(payment.saleId, paymentIndex, newStatus)
           .then((_) {
         // Actualización exitosa, puedes actualizar la UI si es necesario
         setState(() {

@@ -257,8 +257,9 @@ class _AddCashPageState extends State<AddCashPage> {
       // Construir el nombre del archivo PDF con un identificador único
       // Calcular los montos finales y deudas
       double price = productDataMap?['sellingPrice'] ?? 0.0;
+      double priceBuy = productDataMap?['buyPrice'] ?? 0.0;
 
-      double amountCommission = price*.10;
+      double amountCommission = (price - priceBuy) / 4;
 
       // Guardar los detalles de la venta en la base de datos o donde corresponda
       String saleId = await salesService.saveCashSale(sellerId: widget.id,

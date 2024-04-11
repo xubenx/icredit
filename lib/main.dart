@@ -4,6 +4,7 @@ import 'package:icredit/controller/login_service.dart';
 import 'package:icredit/firebase_options.dart';
 import 'package:icredit/views/login_pages.dart';
 import 'package:icredit/views/menu_pages.dart';
+import 'package:cron/cron.dart';
 
 void main() async {
   runApp(MyApp());
@@ -11,13 +12,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MenuApp(id: 'JD0sColOYII0I8UjhqiY', role: 'admin'),
+      home: WelcomeScreen(),
       theme: ThemeData(
         useMaterial3: true,
         // Define el color primario de la aplicación

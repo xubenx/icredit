@@ -255,6 +255,34 @@ class SalesService {
       return payments;
     });
   }
+  Future<void> updatePaymentStatus(String saleId, int paymentIndex, String newStatus) async {
+    try {
+      // Get the document reference for the sale
+      DocumentReference saleRef = _firestore.collection('sales').doc(saleId);
+
+      // Fetch the current sale data
+      DocumentSnapshot saleSnapshot = await saleRef.get();
+      if (!saleSnapshot.exists) {
+        throw Exception('Sale not found.');
+      }
+      var saleData = saleSnapshot.data() as Map<String, dynamic>;
+
+      // Update the payment status within the payments list
+      List<dynamic> paymentsList = saleData['payments'] as List<dynamic>;
+      if (paymentsList.length > paymentIndex) {
+        paymentsList[paymentIndex]['commissionStatus'] = newStatus;
+      } else {
+        throw Exception('Payment not found.');
+      }
+
+      // Update the sale document with the new payments list
+      await saleRef.update({'payments': paymentsList});
+
+      print('Payment status updated to $newStatus for payment index $paymentIndex in sale $saleId');
+    } catch (e) {
+      print('Failed to update payment status: $e');
+  }
+  }
 
   // ... your existing methods ...
   Future<void> updateCommissionStatus(String saleId, int paymentIndex, String newStatus) async {

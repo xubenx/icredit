@@ -732,7 +732,7 @@ class _SalesPageState extends State<SalesPage> {
           sellingPriceCredit = localSellingPriceCredit;
           hookPrice = localHookPrice;
           minimumPayment = localMinimumPayment;
-          totalAmount = localTotalAmount + localTotalAmount;
+          totalAmount = (localMinimumPayment * 45) + localHookPrice;
           balanceAfterDownPayment = localBalanceAfterDownPayment;
           finalDebtAmount = localFinalDebtAmount + (localTotalAmount - localHookPrice);
         });
@@ -836,7 +836,8 @@ class _SalesPageState extends State<SalesPage> {
       double hookPrice = productDataMap?['hookPrice'] ?? 0.0;
       double sellingCreditPrice = productDataMap?['sellingPriceCredit'] ?? 0.0;
       double debtAmount = sellingCreditPrice - hookPrice;
-      double tax = debtAmount % 2.75;
+      double tax = debtAmount * 0.0275; // Corregido para calcular un 2.75% de impuesto
+
 
       // Guardar los detalles de la venta en la base de datos o donde corresponda
       String saleId = await salesService.saveSale(
